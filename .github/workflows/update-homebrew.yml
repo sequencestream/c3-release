@@ -1,0 +1,120 @@
+name: Update Homebrew Formula
+
+# Keep the c3 formula in sequencestream/homebrew-tap in step with each
+# release. The source code lives in another repository; this distribution
+# repo only holds the published releases and their assets, which is all
+# this job needs to read. It can also be run by hand for a given tag.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to sync (e.g. v0.2.0)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  update-formula:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve release tag
+        id: rel
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${{ github.event.release.tag_name }}"
+          fi
+          echo "tag=$TAG"          >> "$GITHUB_OUTPUT"
+          echo "version=${TAG#v}"  >> "$GITHUB_OUTPUT"
+
+      - name: Fetch checksums from release
+        id: sums
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.rel.outputs.tag }}"
+          # A release can be published a moment before its assets finish
+          # uploading. Wait for SHA256SUMS rather than lose that race.
+          for attempt in $(seq 1 30); do
+            if gh release download "$TAG" --repo "${{ github.repository }}" \
+                 --pattern SHA256SUMS --output SHA256SUMS --clobber 2>/dev/null \
+                 && [ -s SHA256SUMS ]; then
+              break
+            fi
+            echo "SHA256SUMS not ready (attempt ${attempt}); waiting 10s..."
+            sleep 10
+          done
+          if [ ! -s SHA256SUMS ]; then
+            echo "::error::SHA256SUMS never appeared for ${TAG} after 5 minutes"; exit 1
+          fi
+          MAC_ARM=$(awk '/macos-arm64\.tar\.gz$/ {print $1}' SHA256SUMS)
+          LINUX_X64=$(awk '/linux-x64\.tar\.gz$/ {print $1}' SHA256SUMS)
+          if [ -z "$MAC_ARM" ] || [ -z "$LINUX_X64" ]; then
+            echo "::error::Expected tarball checksums missing from SHA256SUMS"; exit 1
+          fi
+          echo "mac_arm=$MAC_ARM"     >> "$GITHUB_OUTPUT"
+          echo "linux_x64=$LINUX_X64" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout homebrew-tap
+        uses: actions/checkout@v4
+        with:
+          repository: sequencestream/homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: homebrew-tap
+
+      - name: Render formula
+        env:
+          VERSION:   ${{ steps.rel.outputs.version }}
+          MAC_ARM:   ${{ steps.sums.outputs.mac_arm }}
+          LINUX_X64: ${{ steps.sums.outputs.linux_x64 }}
+          REPO:      ${{ github.repository }}
+        run: |
+          BASE="https://github.com/${REPO}/releases/download/v${VERSION}"
+          cat > homebrew-tap/Formula/c3.rb <<EOF
+          class C3 < Formula
+            desc "Code Creative Center — harness/loop engineering for AI software work"
+            homepage "https://github.com/${REPO}"
+            version "${VERSION}"
+
+            on_macos do
+              on_arm do
+                url "${BASE}/c3-v${VERSION}-macos-arm64.tar.gz"
+                sha256 "${MAC_ARM}"
+              end
+            end
+
+            on_linux do
+              on_intel do
+                url "${BASE}/c3-v${VERSION}-linux-x64.tar.gz"
+                sha256 "${LINUX_X64}"
+              end
+            end
+
+            def install
+              bin.install "c3"
+            end
+
+            test do
+              system "#{bin}/c3", "--version"
+            end
+          end
+          EOF
+
+      - name: Commit and push
+        working-directory: homebrew-tap
+        env:
+          VERSION: ${{ steps.rel.outputs.version }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- Formula/c3.rb; then
+            echo "Formula already up to date for v${VERSION}; nothing to do."
+            exit 0
+          fi
+          git add Formula/c3.rb
+          git commit -m "c3 ${VERSION}"
+          git push
