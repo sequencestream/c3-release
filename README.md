@@ -20,6 +20,9 @@ c3 drives Claude Code and Codex, so you need both installed:
 - **Claude Code** — `curl -fsSL https://claude.ai/install.sh | bash`, or see the [quickstart](https://code.claude.com/docs/en/quickstart).
 - **Codex** — `curl -fsSL https://chatgpt.com/codex/install.sh | sh`, or see the [CLI docs](https://developers.openai.com/codex/cli).
 
+Optional tools:
+- **GitHub CLI** — `brew install gh`, or see [cli.github.com](https://cli.github.com/).
+
 ## Install
 
 ### Homebrew (recommended)
