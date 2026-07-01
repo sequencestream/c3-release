@@ -17,8 +17,12 @@ intents — each with a clear scope, explicit dependencies, and a verifiable def
 - **Structured intents** — vague requirements become scoped, dependency-aware tasks with a verifiable definition of done.
 - **Automated loops** — planning, implementation, and validation run as repeatable, auditable flows.
 - **Multi-agent discussions** — perspectives converge before code is written.
+- **Consensus voting** — multi-agent approval gates before critical decisions.
+- **Worktree isolation** — parallel tasks run in isolated git worktrees.
+- **Sandbox execution** — untrusted code runs in sandboxed environments.
+- **Circuit breaker** — automatic token rate limiting and recovery for agents.
 - **Scheduled tasks** — long-running and recurring work keeps moving on its own.
-- **Spec-first & locally owned** — the spec is the source of truth, and everything runs as a single local process you control.
+- **SDD-native supported** — spec-driven development as a first-class workflow.
 
 ## Prerequisites
 
