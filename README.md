@@ -15,30 +15,19 @@ intents — each with a clear scope, explicit dependencies, and a verifiable def
 
 ## Prerequisites
 
-c3 drives Claude Code and Codex, so you need both installed:
-
-- **Claude Code** — `curl -fsSL https://claude.ai/install.sh | bash`, or see the [quickstart](https://code.claude.com/docs/en/quickstart).
-- **Codex** — `curl -fsSL https://chatgpt.com/codex/install.sh | sh`, or see the [CLI docs](https://developers.openai.com/codex/cli).
-
 Optional tools:
 - **GitHub CLI** — `brew install gh`, or see [cli.github.com](https://cli.github.com/).
+- **GitLab CLI** — `brew install glab`, or see [gitlab.com/gitlab-org/cli](https://gitlab.com/gitlab-org/cli).
 
-## Install / Upgrade
+## Install
 
 ### Homebrew
 
 ```bash
-# install
 brew install sequencestream/tap/c3
-
-# upgrade
-brew upgrade c3
 ```
 
-
 ### Install script
-
-The same commands install c3 and upgrade an existing install to the latest release.
 
 **macOS / Linux:**
 
@@ -52,12 +41,11 @@ curl -fsSL https://raw.githubusercontent.com/sequencestream/c3/main/install.sh |
 irm https://raw.githubusercontent.com/sequencestream/c3/main/install.ps1 | iex
 ```
 
-The script always fetches the latest release for your platform, verifies its checksum, and installs `c3` (to `~/.local/bin` on macOS/Linux, or `%LOCALAPPDATA%\c3\bin` on Windows). Re-run it any time to upgrade. Set `C3_INSTALL_DIR` to choose a different location, or `C3_VERSION` to pin a specific version.
-
+The script always fetches the latest release for your platform, verifies its checksum, and installs `c3` (to `~/.local/bin` on macOS/Linux, or `%LOCALAPPDATA%\c3\bin` on Windows). Set `C3_INSTALL_DIR` to choose a different location, or `C3_VERSION` to pin a specific version.
 
 ### Manual download
 
-Grab the latest build for your platform from the [releases page](https://github.com/sequencestream/c3/releases/) and extract it (to upgrade, extract the new archive over your existing binary):
+Grab the latest build for your platform from the [releases page](https://github.com/sequencestream/c3/releases/) and extract it:
 
 ```bash
 # e.g. c3-v0.4.3-macos-arm64.tar.gz
@@ -65,6 +53,36 @@ tar -xzvf c3-v0.4.3-macos-arm64.tar.gz
 ```
 
 > **macOS note:** the first launch may trigger a security warning. Allow c3 to run in *System Settings → Privacy & Security*.
+
+## Upgrade
+
+### Built-in upgrade command
+
+```bash
+c3 upgrade
+```
+
+The `upgrade` command downloads the latest release, verifies its signature, and replaces the current binary. It never restarts a running c3 — after upgrading, run `c3 restart` (or exit and rerun) to load the new version.
+
+Options:
+- `--check` — only compare versions, do not download or replace.
+- `--force` — reinstall the same version (does not downgrade).
+
+### Other upgrade methods
+
+**Homebrew:**
+
+```bash
+brew upgrade c3
+```
+
+**Install script:**
+
+Re-run the install script — it always fetches the latest release:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sequencestream/c3/main/install.sh | sh
+```
 
 ## Usage
 
