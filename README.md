@@ -24,6 +24,10 @@ intents — each with a clear scope, explicit dependencies, and a verifiable def
 - **Scheduled tasks** — long-running and recurring work keeps moving on its own.
 - **SDD-native supported** — spec-driven development as a first-class workflow.
 
+## Documentation
+
+See the [c3 documentation](doc/README.md).
+
 ## Prerequisites
 
 Optional tools:
