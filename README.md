@@ -1,3 +1,5 @@
+c3 is an open source project, see https://github.com/sequencestream/c3.
+
 # c3
 
 **c3 (Code Creative Center)** is a coding platform that fuses harness and loop
